@@ -16,8 +16,6 @@ class LocationProvider {
     if (_permissible == PermissionStatus.denied) {
       _permissible = await _location.requestPermission();
     }
-    print("Has permission = ");
-    print(_permissible);
 
     //ask for the user to enable location service
     _serviceEnabled = await _location.serviceEnabled();
@@ -29,8 +27,7 @@ class LocationProvider {
         SystemNavigator.pop();
       }
     }
-    print("Service enabled ");
-    print(_serviceEnabled);
+
     //enable background mode
     _location.enableBackgroundMode(enable: true);
     //End permission ask

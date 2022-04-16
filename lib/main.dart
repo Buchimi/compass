@@ -1,13 +1,28 @@
-import 'package:compass/providers/locationProvider.dart';
+//in house packages
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:compass/providers/locationProvider.dart';
 
-void main() {
-  runApp(const MyApp());
+//firebase related
+import 'package:compass/firebase_options.dart';
+import 'package:firebase_core/firebase_core.dart';
+
+//google maps related
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:location/location.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+      name: "compass", options: DefaultFirebaseOptions.currentPlatform);
+
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  MyApp({Key? key}) : super(key: key);
+
+  final FirebaseDatabase _database = FirebaseDatabase.instance;
 
   static const initialCameraPosition =
       CameraPosition(target: LatLng(37.7, -122.43), zoom: 11.5);
@@ -28,10 +43,20 @@ class MyApp extends StatelessWidget {
         // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home: const Scaffold(
+      home: Scaffold(
         body: GoogleMap(
+            onMapCreated: (_) {
+              LocationProvider.initialize();
+              LocationProvider.locationStream.listen((event) {
+                //push data to firebase on change
+                _database
+                    .ref("Users/bii")
+                    .update({"lat": event.latitude, "long": event.longitude});
+              });
+            },
             myLocationButtonEnabled: false,
             zoomControlsEnabled: false,
+            mapType: MapType.normal,
             initialCameraPosition: initialCameraPosition),
       ),
     );
