@@ -1,3 +1,4 @@
+import 'package:compass/providers/locationProvider.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
@@ -28,10 +29,11 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       home: const Scaffold(
-          body: GoogleMap(
-              myLocationButtonEnabled: false,
-              zoomControlsEnabled: false,
-              initialCameraPosition: initialCameraPosition)),
+        body: GoogleMap(
+            myLocationButtonEnabled: false,
+            zoomControlsEnabled: false,
+            initialCameraPosition: initialCameraPosition),
+      ),
     );
   }
 }
