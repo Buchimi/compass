@@ -1,4 +1,5 @@
 //in house packages
+import 'package:compass/providers/cloud_firestore_provider.dart';
 import 'package:compass/providers/realtime_database_provider.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
@@ -7,9 +8,11 @@ import 'package:compass/providers/location_provider.dart';
 //firebase related
 import 'package:compass/firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 //google maps related
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:location/location.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,10 +28,24 @@ class MyApp extends StatelessWidget {
   MyApp({Key? key}) : super(key: key);
 
   final FirebaseDatabase _database = FirebaseDatabase.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  Future<QuerySnapshot<Map<String, dynamic>>> scanForUsers(
+      double lat, double long, double latPad, double longPad) {
+    return _firestore
+        .collection("Users")
+        .where("lat", isGreaterThan: lat - latPad)
+        .where("lat", isLessThan: lat + latPad)
+        .get();
+    //TODO should work with longs
+  }
 
   static const initialCameraPosition =
       CameraPosition(target: LatLng(37.7, -122.43), zoom: 11.5);
   // This widget is the root of your application.
+
+  static late List<QueryDocumentSnapshot<Map<String, dynamic>>> users;
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -46,19 +63,15 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       home: GoogleMap(
-          onMapCreated: (_) {
-            LocationProvider.initialize();
-            LocationProvider.locationStream.listen((event) {
-              //push data to firebase on change
-              _database
-                  .ref("Users/bii")
-                  .update({"lat": event.latitude, "long": event.longitude});
-            });
-          },
-          myLocationButtonEnabled: false,
-          zoomControlsEnabled: false,
-          mapType: MapType.normal,
-          initialCameraPosition: initialCameraPosition),
+        onMapCreated: (_) async {
+          LocationProvider.initialize();
+          LocationData location = await LocationProvider.locationData;
+        },
+        myLocationButtonEnabled: false,
+        zoomControlsEnabled: false,
+        mapType: MapType.normal,
+        initialCameraPosition: initialCameraPosition,
+      ),
     );
   }
 }
