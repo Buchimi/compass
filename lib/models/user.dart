@@ -1,4 +1,3 @@
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 enum SecurityMode { loose, moderate, strict }
 
@@ -19,5 +18,5 @@ class User {
     _securityMode = securityMode;
   }
 
-  LatLng get latLng => LatLng(lat, long);
+  //LatLng get latLng => LatLng(lat, long);
 }

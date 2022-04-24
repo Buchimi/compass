@@ -1,13 +1,27 @@
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+//import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:compass/widgets/sign_in_with/google.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_map/plugin_api.dart';
+import 'package:get_it/get_it.dart';
+import 'package:latlong2/latlong.dart' as lat_lng;
+import 'package:geoflutterfire/geoflutterfire.dart';
+
+typedef UserStream = Stream<List<DocumentSnapshot<Map<String, dynamic>>>>;
 
 class MapPage extends StatelessWidget {
-  MapPage({Key? key}) : super(key: key);
-  static const initialCameraPosition =
-      CameraPosition(target: LatLng(37.7, -122.43), zoom: 11.5);
-  final Marker marker =
-      const Marker(markerId: MarkerId("me"), position: LatLng(37.7, -122.43));
-  late GoogleMapController controller;
+  MapPage({Key? key, required this.stream}) : super(key: key);
+  // static const initialCameraPosition =
+  //     CameraPosition(target: LatLng(37.7, -122.43), zoom: 11.5);
+  // final Marker marker =
+  //     const Marker(markerId: MarkerId("me"), position: LatLng(37.7, -122.43));
+  // late GoogleMapController controller;
+  Geoflutterfire geo = Geoflutterfire();
+
+  //I am skeptical this will work
+  UserStream stream;
+  //init stream
 
   Widget updateMap(BuildContext ctx, AsyncSnapshot<dynamic> snapshot) {
     //TODO: do stuff
@@ -18,12 +32,33 @@ class MapPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        GoogleMap(
-          initialCameraPosition: initialCameraPosition,
-          markers: <Marker>{marker},
-          onMapCreated: (_) => {controller = _},
+        FlutterMap(
+          options: MapOptions(
+            center: lat_lng.LatLng(37.7, -122.43),
+          ),
+          layers: [
+            TileLayerOptions(
+                urlTemplate:
+                    "https://a.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png"),
+            MarkerLayerOptions(markers: [
+              Marker(
+                  point: lat_lng.LatLng(37.7, -122.43),
+                  builder: (context) {
+                    return GestureDetector(
+                      child: FlutterLogo(),
+                      onTap: () => showModalBottomSheet(
+                          context: context,
+                          builder: (context) {
+                            return Text("Hello");
+                          }),
+                    );
+                  })
+            ])
+          ],
         ),
-        StreamBuilder(builder: updateMap)
+        StreamBuilder(
+          builder: updateMap,
+        ),
       ],
     );
   }
