@@ -40,14 +40,11 @@ class MyApp extends StatelessWidget {
   int radius = 20;
 
   UserStream stream = Stream.empty();
-  Future<QuerySnapshot<Map<String, dynamic>>> scanForUsers(
-      double lat, double long, double latPad, double longPad) {
-    return _firestore
-        .collection("Users")
-        .where("lat", isGreaterThan: lat - latPad)
-        .where("lat", isLessThan: lat + latPad)
-        .get();
-    //TODO should work with longs
+
+  UserStream scanForUsers(GeoFirePoint location) {
+    return GetIt.I<Geoflutterfire>()
+        .collection(collectionRef: _firestore.collection("ActiveUsers"))
+        .within(center: location, radius: radius.toDouble(), field: "Location");
   }
 
   // static const initialCameraPosition =
@@ -59,46 +56,38 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
         primarySwatch: Colors.blue,
       ),
       home: Scaffold(
         body: MapPage(
           stream: stream,
         ),
-        floatingActionButton: FloatingActionButton(onPressed: () async {
-          //get location data
-          final locData = await LocationProvider.locationData;
-          //turn it to a geo point
-          GeoFirePoint location = GetIt.I<Geoflutterfire>().point(
-              latitude: locData.latitude!, longitude: locData.longitude!);
+        floatingActionButton: FloatingActionButton(
+            child: const Icon(Icons.add),
+            onPressed: () async {
+              //get location data
+              final locData = await LocationProvider.locationData;
+              //turn it to a geo point
+              GeoFirePoint location = GetIt.I<Geoflutterfire>().point(
+                  latitude: locData.latitude!, longitude: locData.longitude!);
 
-          //store the position data into the database
-          _firestore.collection("ActiveUsers").add({
-            "Name": UserProvider.user.displayName,
-            "Location": location.data
-          });
+              //store the position data into the database
+              _firestore.collection("ActiveUsers").add({
+                "Name": UserProvider.user.displayName,
+                "Location": location.data
+              });
 
-          //subscribe to query streams
-          final userStream = GetIt.I<Geoflutterfire>()
-              .collection(collectionRef: _firestore.collection("ActiveUsers"))
-              .within(
-                  center: location,
-                  radius: radius.toDouble(),
-                  field: "Location");
-          //remember to conditionally register getit singletons
-          GetIt.I.registerSingleton<UserStream>(userStream);
-          stream = GetIt.I<UserStream>();
-          print("Stream created and registered");
-        }),
+              //subscribe to query streams
+              //and scan for users
+              final userStream = scanForUsers(location);
+
+              //remember to conditionally register getit singletons
+              GetIt.I.registerSingleton<UserStream>(userStream);
+              stream = GetIt.I<UserStream>();
+
+              //now we want to activate a sort of boolean that says we are initialized
+            }),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       ),
     );
   }
