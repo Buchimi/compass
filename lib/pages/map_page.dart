@@ -1,10 +1,8 @@
 //import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:compass/widgets/sign_in_with/google.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map/plugin_api.dart';
-import 'package:get_it/get_it.dart';
 import 'package:latlong2/latlong.dart' as lat_lng;
 import 'package:geoflutterfire/geoflutterfire.dart';
 
@@ -45,11 +43,11 @@ class MapPage extends StatelessWidget {
                   point: lat_lng.LatLng(37.7, -122.43),
                   builder: (context) {
                     return GestureDetector(
-                      child: FlutterLogo(),
+                      child: const FlutterLogo(),
                       onTap: () => showModalBottomSheet(
                           context: context,
                           builder: (context) {
-                            return Text("Hello");
+                            return const Text("Hello");
                           }),
                     );
                   })

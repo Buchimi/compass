@@ -86,6 +86,8 @@ class MyApp extends StatelessWidget {
               stream = GetIt.I<UserStream>();
 
               //now we want to activate a sort of boolean that says we are initialized
+              
+              //TODO: Remember to dispose the stream when done!
             }),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       ),
