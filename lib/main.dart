@@ -32,25 +32,33 @@ void main() async {
   runApp(MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   MyApp({Key? key}) : super(key: key);
 
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
   final FirebaseDatabase _database = FirebaseDatabase.instance;
+
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
   int radius = 20;
 
-  UserStream stream = Stream.empty();
+  UserStream stream = const Stream.empty();
 
   UserStream scanForUsers(GeoFirePoint location) {
     return GetIt.I<Geoflutterfire>()
         .collection(collectionRef: _firestore.collection("ActiveUsers"))
-        .within(center: location, radius: radius.toDouble(), field: "Location");
+        .within(
+            center: location,
+            radius: radius.toDouble(),
+            field: "Location",
+            strictMode: true);
   }
 
   // static const initialCameraPosition =
-  //     CameraPosition(target: LatLng(37.7, -122.43), zoom: 11.5);
-  // This widget is the root of your application.
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -82,11 +90,14 @@ class MyApp extends StatelessWidget {
               final userStream = scanForUsers(location);
 
               //remember to conditionally register getit singletons
-              GetIt.I.registerSingleton<UserStream>(userStream);
-              stream = GetIt.I<UserStream>();
-
+              if (!GetIt.I.isRegistered<UserStream>()) {
+                GetIt.I.registerSingleton<UserStream>(userStream);
+              }
+              setState(() {
+                stream = GetIt.I<UserStream>();
+              });
               //now we want to activate a sort of boolean that says we are initialized
-              
+
               //TODO: Remember to dispose the stream when done!
             }),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,

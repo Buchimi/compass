@@ -1,4 +1,3 @@
-//import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -21,41 +20,64 @@ class MapPage extends StatelessWidget {
   UserStream stream;
   //init stream
 
-  Widget updateMap(BuildContext ctx, AsyncSnapshot<dynamic> snapshot) {
-    //TODO: do stuff
-    return const CustomPaint();
+  List<Marker> markers = [
+    Marker(
+        point: lat_lng.LatLng(37.7, -122.43),
+        builder: (context) {
+          return GestureDetector(
+            child: const FlutterLogo(),
+            onTap: () => showModalBottomSheet(
+                context: context,
+                builder: (context) {
+                  return const Text("Hello");
+                }),
+          );
+        })
+  ];
+
+  Marker createMarker(GeoPoint point) {
+    return Marker(
+      point: lat_lng.LatLng(point.latitude, point.longitude),
+      builder: (context) {
+        return GestureDetector(
+            child: const FlutterLogo(),
+            onTap: () => showModalBottomSheet(
+                context: context,
+                builder: (context) {
+                  return const Text("Hello");
+                }));
+      },
+    );
+  }
+
+  GeoPoint getGeoPointFromDocSnapshot(
+      DocumentSnapshot<Map<String, dynamic>> shot) {
+    return shot.get("Location")["geopoint"] as GeoPoint;
   }
 
   @override
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        FlutterMap(
-          options: MapOptions(
-            center: lat_lng.LatLng(37.7, -122.43),
-          ),
-          layers: [
-            TileLayerOptions(
-                urlTemplate:
-                    "https://a.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png"),
-            MarkerLayerOptions(markers: [
-              Marker(
-                  point: lat_lng.LatLng(37.7, -122.43),
-                  builder: (context) {
-                    return GestureDetector(
-                      child: const FlutterLogo(),
-                      onTap: () => showModalBottomSheet(
-                          context: context,
-                          builder: (context) {
-                            return const Text("Hello");
-                          }),
-                    );
-                  })
-            ])
-          ],
-        ),
         StreamBuilder(
-          builder: updateMap,
+          stream: stream,
+          builder: (ctx,
+              AsyncSnapshot<List<DocumentSnapshot<Map<String, dynamic>>>>
+                  shot) {
+            shot.data?.forEach((element) =>
+                markers.add(createMarker(getGeoPointFromDocSnapshot(element))));
+            return FlutterMap(
+              options: MapOptions(
+                center: lat_lng.LatLng(37.7, -122.43),
+              ),
+              layers: [
+                TileLayerOptions(
+                    urlTemplate:
+                        "https://a.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png"),
+                MarkerLayerOptions(markers: markers)
+              ],
+            );
+          },
         ),
       ],
     );

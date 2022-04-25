@@ -6,7 +6,7 @@ class SignInWithGoogle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const ElevatedButton(
+    return  const ElevatedButton(
         onPressed: UserProvider.signInWithGoogle,
         child: Text("Sign in with Google"));
   }

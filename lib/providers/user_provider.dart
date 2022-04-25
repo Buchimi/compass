@@ -17,7 +17,6 @@ class UserProvider {
 
     _credential =
         await FirebaseAuth.instance.signInWithCredential(credidential);
-
     _initialized = true;
   }
 
@@ -25,6 +24,7 @@ class UserProvider {
     if (!_initialized) {
       //initialize, better logic can be used eventually
       signInWithGoogle();
+      //TODO we should await this, fix it
     }
     return _credential.user!;
   }
