@@ -1,11 +1,12 @@
 //This is initialized after the user signs in
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 class UserProvider {
   static bool _initialized = false;
   static late UserCredential _credential;
-  static User get user => _getUser(); 
+  static User get user => _getUser();
 
   static void signInWithGoogle() async {
     final GoogleSignInAccount? user = await GoogleSignIn().signIn();
@@ -17,6 +18,15 @@ class UserProvider {
 
     _credential =
         await FirebaseAuth.instance.signInWithCredential(credidential);
+
+    //write to database
+    FirebaseFirestore _firestore = FirebaseFirestore.instance;
+    _firestore.collection("Users").doc(_credential.user!.uid).set({
+      "First Name": "Bee", //TODO: update
+      "Last Name": "Bee",
+      "Age": 20,
+      "Mailbox": []
+    });
     _initialized = true;
   }
 

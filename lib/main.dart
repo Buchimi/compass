@@ -84,9 +84,9 @@ class _MyAppState extends State<MyApp> {
               _firestore.collection("ActiveUsers").add({
                 "Name": UserProvider.user.displayName,
                 "Location": location.data,
-                "Profile Url": UserProvider.user.photoURL
+                "Profile Url": UserProvider.user.photoURL,
+                "ID": UserProvider.user.uid
               });
-
               //subscribe to query streams
               //and scan for users
               final userStream = scanForUsers(location);

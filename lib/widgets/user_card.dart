@@ -1,9 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:compass/providers/user_provider.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
 class UserCard extends StatelessWidget {
-  const UserCard({Key? key, required this.shot}) : super(key: key);
+  UserCard({Key? key, required this.shot}) : super(key: key);
   final DocumentSnapshot<Map<String, dynamic>> shot;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -14,7 +17,19 @@ class UserCard extends StatelessWidget {
               Image.network(shot.get("Profile Url")),
             ],
           ),
-          ElevatedButton(onPressed: () {}, child: const Text("Connect"))
+          ElevatedButton(
+              onPressed: () {
+                DocumentReference refToUser =
+                    _firestore.collection("Users").doc(shot["ID"]);
+                refToUser.update({
+                  "Mailbox": FieldValue.arrayUnion([UserProvider.user.uid])
+                });
+                // set(
+                //   {},
+                //   SetOptions(merge: true),
+                // );
+              },
+              child: const Text("Connect"))
         ],
       ),
     );
