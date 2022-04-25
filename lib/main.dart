@@ -2,6 +2,7 @@
 import 'package:compass/pages/map_page.dart';
 import 'package:compass/providers/realtime_database_provider.dart';
 import 'package:compass/providers/user_provider.dart';
+import 'package:compass/widgets/mail/mailbox.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:compass/providers/location_provider.dart';
@@ -22,6 +23,7 @@ typedef UserStream = Stream<List<DocumentSnapshot<Map<String, dynamic>>>>;
 
 void main() async {
   //Registers get it
+  UserProvider.signInWithGoogle();
   GetIt.I.registerSingleton<Geoflutterfire>(Geoflutterfire());
 
   WidgetsFlutterBinding.ensureInitialized();
@@ -68,48 +70,50 @@ class _MyAppState extends State<MyApp> {
         primarySwatch: Colors.blue,
       ),
       home: Scaffold(
-        body: MapPage(
-          stream: stream,
-        ),
+        body: MailBox(),
+        // MapPage(
+        //   stream: stream,
+        // ),
         floatingActionButton: FloatingActionButton(
-            child: const Icon(Icons.add),
-            onPressed: () async {
-              //get location data
-              final locData = await LocationProvider.locationData;
-              //turn it to a geo point
-              GeoFirePoint location = GetIt.I<Geoflutterfire>().point(
-                  latitude: locData.latitude!, longitude: locData.longitude!);
+          child: const Icon(Icons.add),
+          onPressed: () async {
+            //get location data
+            final locData = await LocationProvider.locationData;
+            //turn it to a geo point
+            GeoFirePoint location = GetIt.I<Geoflutterfire>().point(
+                latitude: locData.latitude!, longitude: locData.longitude!);
 
-              //store the position data into the database
-              _firestore.collection("ActiveUsers").add({
-                "Name": UserProvider.user.displayName,
-                "Location": location.data,
-                "Profile Url": UserProvider.user.photoURL,
-                "ID": UserProvider.user.uid
-              });
-              //subscribe to query streams
-              //and scan for users
-              final userStream = scanForUsers(location);
+            //store the position data into the database
+            _firestore.collection("ActiveUsers").add({
+              "Name": UserProvider.user.displayName,
+              "Location": location.data,
+              "Profile Url": UserProvider.user.photoURL,
+              "ID": UserProvider.user.uid
+            });
+            //subscribe to query streams
+            //and scan for users
+            final userStream = scanForUsers(location);
 
-              //remember to conditionally register getit singletons
-              if (!GetIt.I.isRegistered<UserStream>()) {
-                GetIt.I.registerSingleton<UserStream>(userStream);
-              }
-              // else{
-              //   GetIt.I.unregister()
-              //   GetIt.I.registerSingleton(instance)
-              // }
-              if (!GetIt.I.isRegistered<List<Marker>>()) {
-                GetIt.I.registerSingleton<List<Marker>>(<Marker>[]);
-              }
-              GetIt.I<List<Marker>>().clear();
-              setState(() {
-                stream = userStream;
-              });
-              //now we want to activate a sort of boolean that says we are initialized
+            //remember to conditionally register getit singletons
+            if (!GetIt.I.isRegistered<UserStream>()) {
+              GetIt.I.registerSingleton<UserStream>(userStream);
+            }
+            // else{
+            //   GetIt.I.unregister()
+            //   GetIt.I.registerSingleton(instance)
+            // }
+            if (!GetIt.I.isRegistered<List<Marker>>()) {
+              GetIt.I.registerSingleton<List<Marker>>(<Marker>[]);
+            }
+            GetIt.I<List<Marker>>().clear();
+            setState(() {
+              stream = userStream;
+            });
+            //now we want to activate a sort of boolean that says we are initialized
 
-              //TODO: Remember to dispose the stream when done!
-            }),
+            //TODO: Remember to dispose the stream when done!
+          },
+        ),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       ),
     );

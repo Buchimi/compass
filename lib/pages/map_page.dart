@@ -48,45 +48,42 @@ class MapPage extends StatelessWidget {
     return shot.get("Location")["geopoint"] as GeoPoint;
   }
 
+  Widget widgetBuilder(BuildContext context,
+      AsyncSnapshot<List<DocumentSnapshot<Map<String, dynamic>>>> shot) {
+    if (!GetIt.I.isRegistered<List<Marker>>()) {
+      GetIt.I.registerSingleton(<Marker>[]);
+    }
+    shot.data?.forEach(
+        (element) => GetIt.I<List<Marker>>().add(createMarker(element)));
+    return FlutterMap(
+      options: MapOptions(
+        center: lat_lng.LatLng(37.7, -122.43),
+      ),
+      layers: [
+        TileLayerOptions(
+            urlTemplate: "https://a.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png"),
+        MarkerLayerOptions(
+          markers: () {
+            try {
+              if (!GetIt.I.isRegistered<List<Marker>>()) {
+                GetIt.I.registerSingleton(<Marker>[]);
+              }
+              return GetIt.I<List<Marker>>();
+            } catch (f) {
+              print("What the fuck");
+              return <Marker>[];
+            }
+          }(),
+        )
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        StreamBuilder(
-          stream: stream,
-          builder: (ctx,
-              AsyncSnapshot<List<DocumentSnapshot<Map<String, dynamic>>>>
-                  shot) {
-            if (!GetIt.I.isRegistered<List<Marker>>()) {
-              GetIt.I.registerSingleton(<Marker>[]);
-            }
-            shot.data?.forEach((element) =>
-                GetIt.I<List<Marker>>().add(createMarker(element)));
-            return FlutterMap(
-              options: MapOptions(
-                center: lat_lng.LatLng(37.7, -122.43),
-              ),
-              layers: [
-                TileLayerOptions(
-                    urlTemplate:
-                        "https://a.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png"),
-                MarkerLayerOptions(
-                  markers: () {
-                    try {
-                      if (!GetIt.I.isRegistered<List<Marker>>()) {
-                        GetIt.I.registerSingleton(<Marker>[]);
-                      }
-                      return GetIt.I<List<Marker>>();
-                    } catch (f) {
-                      print("What the fuck");
-                      return <Marker>[];
-                    }
-                  }(),
-                )
-              ],
-            );
-          },
-        ),
+        StreamBuilder(stream: stream, builder: widgetBuilder),
       ],
     );
   }
