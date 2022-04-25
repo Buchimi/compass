@@ -10,6 +10,7 @@ import 'package:compass/providers/location_provider.dart';
 import 'package:compass/firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:geoflutterfire/geoflutterfire.dart';
 import 'package:get_it/get_it.dart';
 
@@ -82,7 +83,8 @@ class _MyAppState extends State<MyApp> {
               //store the position data into the database
               _firestore.collection("ActiveUsers").add({
                 "Name": UserProvider.user.displayName,
-                "Location": location.data
+                "Location": location.data,
+                "Profile Url": UserProvider.user.photoURL
               });
 
               //subscribe to query streams
@@ -93,8 +95,16 @@ class _MyAppState extends State<MyApp> {
               if (!GetIt.I.isRegistered<UserStream>()) {
                 GetIt.I.registerSingleton<UserStream>(userStream);
               }
+              // else{
+              //   GetIt.I.unregister()
+              //   GetIt.I.registerSingleton(instance)
+              // }
+              if (!GetIt.I.isRegistered<List<Marker>>()) {
+                GetIt.I.registerSingleton<List<Marker>>(<Marker>[]);
+              }
+              GetIt.I<List<Marker>>().clear();
               setState(() {
-                stream = GetIt.I<UserStream>();
+                stream = userStream;
               });
               //now we want to activate a sort of boolean that says we are initialized
 

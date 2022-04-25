@@ -1,7 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:compass/widgets/user_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map/plugin_api.dart';
+import 'package:get_it/get_it.dart';
 import 'package:latlong2/latlong.dart' as lat_lng;
 import 'package:geoflutterfire/geoflutterfire.dart';
 
@@ -20,32 +22,23 @@ class MapPage extends StatelessWidget {
   UserStream stream;
   //init stream
 
-  List<Marker> markers = [
-    Marker(
-        point: lat_lng.LatLng(37.7, -122.43),
-        builder: (context) {
-          return GestureDetector(
-            child: const FlutterLogo(),
-            onTap: () => showModalBottomSheet(
-                context: context,
-                builder: (context) {
-                  return const Text("Hello");
-                }),
-          );
-        })
-  ];
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  Marker createMarker(GeoPoint point) {
+  Marker createMarker(DocumentSnapshot<Map<String, dynamic>> shot) {
+    GeoPoint point = getGeoPointFromDocSnapshot(shot);
     return Marker(
       point: lat_lng.LatLng(point.latitude, point.longitude),
       builder: (context) {
         return GestureDetector(
-            child: const FlutterLogo(),
-            onTap: () => showModalBottomSheet(
-                context: context,
-                builder: (context) {
-                  return const Text("Hello");
-                }));
+          child: const FlutterLogo(),
+          onTap: () => showModalBottomSheet(
+              context: context,
+              builder: (context) {
+                return UserCard(
+                  shot: shot,
+                );
+              }),
+        );
       },
     );
   }
@@ -64,8 +57,11 @@ class MapPage extends StatelessWidget {
           builder: (ctx,
               AsyncSnapshot<List<DocumentSnapshot<Map<String, dynamic>>>>
                   shot) {
+            if (!GetIt.I.isRegistered<List<Marker>>()) {
+              GetIt.I.registerSingleton(<Marker>[]);
+            }
             shot.data?.forEach((element) =>
-                markers.add(createMarker(getGeoPointFromDocSnapshot(element))));
+                GetIt.I<List<Marker>>().add(createMarker(element)));
             return FlutterMap(
               options: MapOptions(
                 center: lat_lng.LatLng(37.7, -122.43),
@@ -74,7 +70,19 @@ class MapPage extends StatelessWidget {
                 TileLayerOptions(
                     urlTemplate:
                         "https://a.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png"),
-                MarkerLayerOptions(markers: markers)
+                MarkerLayerOptions(
+                  markers: () {
+                    try {
+                      if (!GetIt.I.isRegistered<List<Marker>>()) {
+                        GetIt.I.registerSingleton(<Marker>[]);
+                      }
+                      return GetIt.I<List<Marker>>();
+                    } catch (f) {
+                      print("What the fuck");
+                      return <Marker>[];
+                    }
+                  }(),
+                )
               ],
             );
           },

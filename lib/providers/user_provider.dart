@@ -5,7 +5,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 class UserProvider {
   static bool _initialized = false;
   static late UserCredential _credential;
-  static User get user => _getUser();
+  static User get user => _getUser(); 
 
   static void signInWithGoogle() async {
     final GoogleSignInAccount? user = await GoogleSignIn().signIn();
