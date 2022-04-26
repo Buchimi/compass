@@ -70,10 +70,10 @@ class _MyAppState extends State<MyApp> {
         primarySwatch: Colors.blue,
       ),
       home: Scaffold(
-        body: MailBox(),
-        // MapPage(
-        //   stream: stream,
-        // ),
+        body: //MailBox(),
+            MapPage(
+          stream: stream,
+        ),
         floatingActionButton: FloatingActionButton(
           child: const Icon(Icons.add),
           onPressed: () async {

@@ -7,16 +7,31 @@ class Deck extends StatelessWidget {
   final List<User> users;
   int current = 0;
 
+  IconButton acceptButton =
+      IconButton(onPressed: () {
+
+      }, icon: const Icon(Icons.check));
+
+  IconButton declineButton =
+      IconButton(onPressed: () {}, icon: const Icon(Icons.cancel_outlined));
   @override
   Widget build(BuildContext context) {
     return StatefulBuilder(
       builder: ((context, setState) => SwipeDetector(
-            child: Card(
-              child: Row(
-                children: [
-                  Expanded(child: Image.network(users[current].imgSource))
-                ],
-              ),
+            child: 
+            Column(
+              children: [
+                Card(
+                  child: Row(
+                    children: [
+                      Expanded(child: Image.network(users[current].imgSource))
+                    ],
+                  ),
+                ),
+                Row(
+                  children: [acceptButton, declineButton],
+                )
+              ],
             ),
             onSwipeRight: (Offset offset) {
               setState(

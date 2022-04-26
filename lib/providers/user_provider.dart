@@ -24,6 +24,7 @@ class UserProvider {
     _firestore.collection("Users").doc(_credential.user!.uid).set({
       "First Name": "Bee", //TODO: update
       "Last Name": "Bee",
+      "Photo URL" : _credential.user?.photoURL,
       "Age": 20,
       "Mailbox": []
     });

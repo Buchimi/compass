@@ -16,13 +16,10 @@ class MailBox extends StatelessWidget {
     List<Widget> children = [];
     List<User> users = [];
     snapshot.data?.get("Mailbox").forEach(
-          (element) => children.add(
-            SimpleDialogOption(
-              child: Text(element["Name"]),
-            ),
-          ),
+          (element) => users.add(User(element["Name"],
+              imgSource: element["Photo URL"], uid: element["ID"])),
         );
-    //Deck(users)
+    children.add(Deck(users));
     return SimpleDialog(
       children: children,
     );

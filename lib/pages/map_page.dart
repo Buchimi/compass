@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:compass/models/user.dart';
 import 'package:compass/widgets/user_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -31,11 +32,13 @@ class MapPage extends StatelessWidget {
       builder: (context) {
         return GestureDetector(
           child: const FlutterLogo(),
-          onTap: () => showModalBottomSheet(
+          onTap: () => showDialog(
               context: context,
               builder: (context) {
-                return UserCard(
-                  shot: shot,
+                return SimpleDialog(
+                  children: [
+                    UserCard(user: User.parseUserFromUsersSnapshot(shot))
+                  ],
                 );
               }),
         );
